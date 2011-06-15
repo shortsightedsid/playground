@@ -17,32 +17,42 @@
 
 #define _SCHEME_SOURCE
 #include "scheme-private.h"
+
 #ifndef WIN32
-# include <unistd.h>
+#include <unistd.h>
 #endif
+
 #ifdef WIN32
 #define snprintf _snprintf
 #endif
+
 #if USE_DL
-# include "dynload.h"
+#include "dynload.h"
 #endif
+
 #if USE_MATH
-# include <math.h>
+#include <math.h>
 #endif
+
 
 #include <limits.h>
 #include <float.h>
 #include <ctype.h>
 
+
 #if USE_STRCASECMP
 #include <strings.h>
-# ifndef __APPLE__
-#  define stricmp strcasecmp
-# endif
+
+#ifndef __APPLE__
+#define stricmp strcasecmp
 #endif
+
+#endif
+
 
 /* Used for documentation purposes, to signal functions in 'interface' */
 #define INTERFACE
+
 
 #define TOK_EOF     (-1)
 #define TOK_LPAREN  0
@@ -65,68 +75,87 @@
  *  Basic memory allocation units
  */
 
+
 #define banner "Playground Scheme 0.1"
+
 
 #include <string.h>
 #include <stdlib.h>
 
+
 #ifdef __APPLE__
 static int stricmp(const char *s1, const char *s2)
 {
-  unsigned char c1, c2;
-  do {
-    c1 = tolower(*s1);
-    c2 = tolower(*s2);
-    if (c1 < c2)
-      return -1;
-    else if (c1 > c2)
-      return 1;
-    s1++, s2++;
-  } while (c1 != 0);
-  return 0;
+     unsigned char c1, c2;
+
+     do {
+          c1 = tolower(*s1);
+          c2 = tolower(*s2);
+
+          if (c1 < c2) {
+               return -1;
+          }
+          else if (c1 > c2) {
+               return 1;
+          }
+
+          s1++, s2++;
+     } while (c1 != 0);
+
+     return 0;
 }
 #endif /* __APPLE__ */
 
+
 #if USE_STRLWR
-static const char *strlwr(char *s) {
-  const char *p=s;
-  while(*s) {
-    *s=tolower(*s);
-    s++;
-  }
-  return p;
+static const char *strlwr(char *s) 
+{
+     const char *p = s;
+
+     while(*s) {
+          *s = tolower(*s);
+
+          s++;
+     }
+
+     return p;
 }
 #endif
 
+
 #ifndef prompt
-# define prompt "ts> "
+#define prompt "ts> "
 #endif
+
 
 #ifndef InitFile
-# define InitFile "init.scm"
+#define InitFile "init.scm"
 #endif
+
 
 #ifndef FIRST_CELLSEGS
-# define FIRST_CELLSEGS 3
+#define FIRST_CELLSEGS 3
 #endif
 
+
 enum scheme_types {
-  T_STRING=1,
-  T_NUMBER=2,
-  T_SYMBOL=3,
-  T_PROC=4,
-  T_PAIR=5,
-  T_CLOSURE=6,
-  T_CONTINUATION=7,
-  T_FOREIGN=8,
-  T_CHARACTER=9,
-  T_PORT=10,
-  T_VECTOR=11,
-  T_MACRO=12,
-  T_PROMISE=13,
-  T_ENVIRONMENT=14,
-  T_LAST_SYSTEM_TYPE=14
+     T_STRING           = 1,
+     T_NUMBER           = 2,
+     T_SYMBOL           = 3,
+     T_PROC             = 4,
+     T_PAIR             = 5,
+     T_CLOSURE          = 6,
+     T_CONTINUATION     = 7,
+     T_FOREIGN          = 8,
+     T_CHARACTER        = 9,
+     T_PORT             = 10,
+     T_VECTOR           = 11,
+     T_MACRO            = 12,
+     T_PROMISE          = 13,
+     T_ENVIRONMENT      = 14,
+     T_LAST_SYSTEM_TYPE = 14
 };
+
 
 /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
 #define ADJ 32
@@ -153,68 +182,187 @@ static int num_ge(num a, num b);
 static int num_lt(num a, num b);
 static int num_le(num a, num b);
 
+
 #if USE_MATH
 static double round_per_R5RS(double x);
 #endif
+
+
 static int is_zero_double(double x);
+
+
 static INLINE int num_is_integer(pointer p) {
-  return ((p)->_object._number.is_fixnum);
+     return ((p)->_object._number.is_fixnum);
 }
+
 
 static num num_zero;
 static num num_one;
+
 
 /* macros for cell operations */
 #define typeflag(p)      ((p)->_flag)
 #define type(p)          (typeflag(p)&T_MASKTYPE)
 
-INTERFACE INLINE int is_string(pointer p)     { return (type(p)==T_STRING); }
+
+INTERFACE INLINE int is_string(pointer p)
+{ 
+     return (type(p) == T_STRING); 
+}
+
+
 #define strvalue(p)      ((p)->_object._string._svalue)
-#define strlength(p)        ((p)->_object._string._length)
+#define strlength(p)     ((p)->_object._string._length)
+
 
 INTERFACE static int is_list(scheme *sc, pointer p);
-INTERFACE INLINE int is_vector(pointer p)    { return (type(p)==T_VECTOR); }
+
+
+INTERFACE INLINE int is_vector(pointer p)
+{
+     return (type(p) == T_VECTOR); 
+}
+
+
 INTERFACE static void fill_vector(pointer vec, pointer obj);
 INTERFACE static pointer vector_elem(pointer vec, int ielem);
 INTERFACE static pointer set_vector_elem(pointer vec, int ielem, pointer a);
-INTERFACE INLINE int is_number(pointer p)    { return (type(p)==T_NUMBER); }
-INTERFACE INLINE int is_integer(pointer p) {
-  return is_number(p) && ((p)->_object._number.is_fixnum);
+
+INTERFACE INLINE int is_number(pointer p)
+{
+     return (type(p) == T_NUMBER); 
 }
+
+
+INTERFACE INLINE int is_integer(pointer p) {
+     return is_number(p) && ((p)->_object._number.is_fixnum);
+}
+
 
 INTERFACE INLINE int is_real(pointer p) {
-  return is_number(p) && (!(p)->_object._number.is_fixnum);
+     return is_number(p) && (!(p)->_object._number.is_fixnum);
 }
 
-INTERFACE INLINE int is_character(pointer p) { return (type(p)==T_CHARACTER); }
-INTERFACE INLINE char *string_value(pointer p) { return strvalue(p); }
-INLINE num nvalue(pointer p)       { return ((p)->_object._number); }
-INTERFACE long ivalue(pointer p)      { return (num_is_integer(p)?(p)->_object._number.value.ivalue:(long)(p)->_object._number.value.rvalue); }
-INTERFACE double rvalue(pointer p)    { return (!num_is_integer(p)?(p)->_object._number.value.rvalue:(double)(p)->_object._number.value.ivalue); }
-#define ivalue_unchecked(p)       ((p)->_object._number.value.ivalue)
-#define rvalue_unchecked(p)       ((p)->_object._number.value.rvalue)
+
+INTERFACE INLINE int is_character(pointer p)
+{ 
+     return (type(p) == T_CHARACTER); 
+}
+
+
+INTERFACE INLINE char *string_value(pointer p)
+{ 
+     return strvalue(p);
+}
+
+
+INLINE num nvalue(pointer p)
+{ 
+     return ((p)->_object._number); 
+}
+
+
+INTERFACE long ivalue(pointer p)
+{ 
+     return (num_is_integer(p) ? 
+             (p)->_object._number.value.ivalue : 
+             (long)(p)->_object._number.value.rvalue); 
+}
+
+
+INTERFACE double rvalue(pointer p)
+{ 
+     return (!num_is_integer(p) ? 
+             (p)->_object._number.value.rvalue :
+             (double)(p)->_object._number.value.ivalue);
+}
+
+
+#define ivalue_unchecked(p)  ((p)->_object._number.value.ivalue)
+#define rvalue_unchecked(p)  ((p)->_object._number.value.rvalue)
 #define set_num_integer(p)   (p)->_object._number.is_fixnum=1;
 #define set_num_real(p)      (p)->_object._number.is_fixnum=0;
-INTERFACE  long charvalue(pointer p)  { return ivalue_unchecked(p); }
 
-INTERFACE INLINE int is_port(pointer p)     { return (type(p)==T_PORT); }
-INTERFACE INLINE int is_inport(pointer p)  { return is_port(p) && p->_object._port->kind & port_input; }
-INTERFACE INLINE int is_outport(pointer p) { return is_port(p) && p->_object._port->kind & port_output; }
 
-INTERFACE INLINE int is_pair(pointer p)     { return (type(p)==T_PAIR); }
+INTERFACE long charvalue(pointer p)
+{ 
+     return ivalue_unchecked(p);
+}
+
+
+INTERFACE INLINE int is_port(pointer p)
+{ 
+     return (type(p) == T_PORT);
+}
+
+
+INTERFACE INLINE int is_inport(pointer p)
+{ 
+     return is_port(p) && p->_object._port->kind & port_input;
+}
+
+
+INTERFACE INLINE int is_outport(pointer p) 
+{ 
+     return is_port(p) && p->_object._port->kind & port_output; 
+}
+
+
+INTERFACE INLINE int is_pair(pointer p)
+{ 
+     return (type(p) == T_PAIR); 
+}
+
+
 #define car(p)           ((p)->_object._cons._car)
 #define cdr(p)           ((p)->_object._cons._cdr)
-INTERFACE pointer pair_car(pointer p)   { return car(p); }
-INTERFACE pointer pair_cdr(pointer p)   { return cdr(p); }
-INTERFACE pointer set_car(pointer p, pointer q) { return car(p)=q; }
-INTERFACE pointer set_cdr(pointer p, pointer q) { return cdr(p)=q; }
 
-INTERFACE INLINE int is_symbol(pointer p)   { return (type(p)==T_SYMBOL); }
-INTERFACE INLINE char *symname(pointer p)   { return strvalue(car(p)); }
+
+INTERFACE pointer pair_car(pointer p)
+{
+     return car(p);
+}
+
+
+INTERFACE pointer pair_cdr(pointer p)   
+{
+     return cdr(p);
+}
+
+
+INTERFACE pointer set_car(pointer p, pointer q)
+{ 
+     return car(p) = q;
+}
+
+
+INTERFACE pointer set_cdr(pointer p, pointer q)
+{
+     return cdr(p) = q;
+}
+
+
+INTERFACE INLINE int is_symbol(pointer p)
+{
+     return (type(p) == T_SYMBOL);
+}
+
+
+INTERFACE INLINE char *symname(pointer p)
+{ 
+     return strvalue(car(p));
+}
+
+
 #if USE_PLIST
-SCHEME_EXPORT INLINE int hasprop(pointer p)     { return (typeflag(p)&T_SYMBOL); }
+SCHEME_EXPORT INLINE int hasprop(pointer p)
+{ 
+     return (typeflag(p) & T_SYMBOL);
+}
+
 #define symprop(p)       cdr(p)
 #endif
+
 
 INTERFACE INLINE int is_syntax(pointer p)   { return (typeflag(p)&T_SYNTAX); }
 INTERFACE INLINE int is_proc(pointer p)     { return (type(p)==T_PROC); }
