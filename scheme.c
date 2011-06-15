@@ -1,4 +1,7 @@
-/* T I N Y S C H E M E    1 . 4 0
+/* Playground Scheme
+ *   Sid H (shortsightedsid <at> gmail <dot> com
+ *   Based on TinyScheme 1.40. Original credits follow.
+ * T I N Y S C H E M E    1 . 4 0
  *   Dimitrios Souflis (dsouflis@acm.org)
  *   Based on MiniScheme (original credits follow)
  * (MINISCM)               coded by Atsushi Moriwaki (11/5/1989)
@@ -62,7 +65,7 @@
  *  Basic memory allocation units
  */
 
-#define banner "TinyScheme 1.39"
+#define banner "Playground Scheme 0.1"
 
 #include <string.h>
 #include <stdlib.h>
