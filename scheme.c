@@ -2474,7 +2474,8 @@ static int token(scheme *sc)
 #define   ok_abbrev(x)   (is_pair(x) && cdr(x) == sc->NIL)
 
 
-static void printslashstring(scheme *sc, char *p, int len) {
+static void printslashstring(scheme *sc, char *p, int len) 
+{
      int i;
      unsigned char *s = (unsigned char*)p;
 
@@ -2994,237 +2995,285 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
     sc->op = (int)OP_ERR0;
     return sc->T;
 }
+
+
 #define Error_1(sc,s, a) return _Error_1(sc,s,a)
 #define Error_0(sc,s)    return _Error_1(sc,s,0)
 
+
 /* Too small to turn into function */
-# define  BEGIN     do {
-# define  END  } while (0)
+#define  BEGIN     do {
+#define  END  } while (0)
+
+
 #define s_goto(sc,a) BEGIN                                  \
     sc->op = (int)(a);                                      \
     return sc->T; END
 
+
 #define s_return(sc,a) return _s_return(sc,a)
+
 
 #ifndef USE_SCHEME_STACK
 
+
 /* this structure holds all the interpreter's registers */
 struct dump_stack_frame {
-  enum scheme_opcodes op;
-  pointer args;
-  pointer envir;
-  pointer code;
+     enum scheme_opcodes op;
+     pointer args;
+     pointer envir;
+     pointer code;
 };
+
 
 #define STACK_GROWTH 3
 
+
 static void s_save(scheme *sc, enum scheme_opcodes op, pointer args, pointer code)
 {
-  int nframes = (int)sc->dump;
-  struct dump_stack_frame *next_frame;
+     int nframes = (int)sc->dump;
+     struct dump_stack_frame *next_frame;
+     
+     /* enough room for the next frame? */
+     if (nframes >= sc->dump_size) {
+          sc->dump_size += STACK_GROWTH;
+          /* alas there is no sc->realloc */
+          sc->dump_base = realloc(sc->dump_base,
+                                  sizeof(struct dump_stack_frame) * sc->dump_size);
+     }
 
-  /* enough room for the next frame? */
-  if (nframes >= sc->dump_size) {
-    sc->dump_size += STACK_GROWTH;
-    /* alas there is no sc->realloc */
-    sc->dump_base = realloc(sc->dump_base,
-                            sizeof(struct dump_stack_frame) * sc->dump_size);
-  }
-  next_frame = (struct dump_stack_frame *)sc->dump_base + nframes;
-  next_frame->op = op;
-  next_frame->args = args;
-  next_frame->envir = sc->envir;
-  next_frame->code = code;
-  sc->dump = (pointer)(nframes+1);
+     next_frame        = (struct dump_stack_frame *)sc->dump_base + nframes;
+     next_frame->op    = op;
+     next_frame->args  = args;
+     next_frame->envir = sc->envir;
+     next_frame->code  = code;
+
+     sc->dump = (pointer)(nframes+1);
 }
+
 
 static pointer _s_return(scheme *sc, pointer a)
 {
-  int nframes = (int)sc->dump;
-  struct dump_stack_frame *frame;
+     int nframes = (int)sc->dump;
+     struct dump_stack_frame *frame;
+     
+     sc->value = (a);
+     if (nframes <= 0) {
+          return sc->NIL;
+     }
+ 
+     nframes--;
+     frame = (struct dump_stack_frame *)sc->dump_base + nframes;
+     
+     sc->op    = frame->op;
+     sc->args  = frame->args;
+     sc->envir = frame->envir;
+     sc->code  = frame->code;
+     sc->dump  = (pointer)nframes;
 
-  sc->value = (a);
-  if (nframes <= 0) {
-    return sc->NIL;
-  }
-  nframes--;
-  frame = (struct dump_stack_frame *)sc->dump_base + nframes;
-  sc->op = frame->op;
-  sc->args = frame->args;
-  sc->envir = frame->envir;
-  sc->code = frame->code;
-  sc->dump = (pointer)nframes;
-  return sc->T;
+     return sc->T;
 }
+
 
 static INLINE void dump_stack_reset(scheme *sc)
 {
-  /* in this implementation, sc->dump is the number of frames on the stack */
-  sc->dump = (pointer)0;
+     /* in this implementation, sc->dump is the number of frames on the stack */
+     sc->dump = (pointer)0;
 }
+
 
 static INLINE void dump_stack_initialize(scheme *sc)
 {
-  sc->dump_size = 0;
-  sc->dump_base = NULL;
-  dump_stack_reset(sc);
+     sc->dump_size = 0;
+     sc->dump_base = NULL;
+
+     dump_stack_reset(sc);
 }
+
 
 static void dump_stack_free(scheme *sc)
 {
-  free(sc->dump_base);
-  sc->dump_base = NULL;
-  sc->dump = (pointer)0;
-  sc->dump_size = 0;
+     free(sc->dump_base);
+
+     sc->dump_base = NULL;
+     sc->dump      = (pointer)0;
+     sc->dump_size = 0;
 }
+
 
 static INLINE void dump_stack_mark(scheme *sc)
 {
-  int nframes = (int)sc->dump;
-  int i;
-  for(i=0; i<nframes; i++) {
-    struct dump_stack_frame *frame;
-    frame = (struct dump_stack_frame *)sc->dump_base + i;
-    mark(frame->args);
-    mark(frame->envir);
-    mark(frame->code);
-  }
+     int nframes = (int)sc->dump;
+     int i;
+
+     for(i=0; i<nframes; i++) {
+          struct dump_stack_frame *frame;
+
+          frame = (struct dump_stack_frame *)sc->dump_base + i;
+
+          mark(frame->args);
+          mark(frame->envir);
+          mark(frame->code);
+     }
 }
 
 #else
 
 static INLINE void dump_stack_reset(scheme *sc)
 {
-  sc->dump = sc->NIL;
+     sc->dump = sc->NIL;
 }
+
 
 static INLINE void dump_stack_initialize(scheme *sc)
 {
-  dump_stack_reset(sc);
+     dump_stack_reset(sc);
 }
+
 
 static void dump_stack_free(scheme *sc)
 {
-  sc->dump = sc->NIL;
+     sc->dump = sc->NIL;
 }
 
-static pointer _s_return(scheme *sc, pointer a) {
-    sc->value = (a);
-    if(sc->dump==sc->NIL) return sc->NIL;
-    sc->op = ivalue(car(sc->dump));
-    sc->args = cadr(sc->dump);
-    sc->envir = caddr(sc->dump);
-    sc->code = cadddr(sc->dump);
-    sc->dump = cddddr(sc->dump);
-    return sc->T;
+
+static pointer _s_return(scheme *sc, pointer a)
+{
+     sc->value = (a);
+
+     if(sc->dump == sc->NIL) return sc->NIL;
+
+     sc->op    = ivalue(car(sc->dump));
+     sc->args  = cadr(sc->dump);
+     sc->envir = caddr(sc->dump);
+     sc->code  = cadddr(sc->dump);
+     sc->dump  = cddddr(sc->dump);
+
+     return sc->T;
 }
 
-static void s_save(scheme *sc, enum scheme_opcodes op, pointer args, pointer code) {
-    sc->dump = cons(sc, sc->envir, cons(sc, (code), sc->dump));
-    sc->dump = cons(sc, (args), sc->dump);
-    sc->dump = cons(sc, mk_integer(sc, (long)(op)), sc->dump);
+
+static void s_save(scheme *sc, enum scheme_opcodes op, pointer args, pointer code)
+{
+     sc->dump = cons(sc, sc->envir, cons(sc, (code), sc->dump));
+     sc->dump = cons(sc, (args), sc->dump);
+     sc->dump = cons(sc, mk_integer(sc, (long)(op)), sc->dump);
 }
+
 
 static INLINE void dump_stack_mark(scheme *sc)
 {
-  mark(sc->dump);
+     mark(sc->dump);
 }
+
 #endif
+
+
 
 #define s_retbool(tf)    s_return(sc,(tf) ? sc->T : sc->F)
 
-static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
-     pointer x, y;
 
+
+static pointer opexe_0(scheme *sc, enum scheme_opcodes op)
+{
+     pointer x, y;
+     
      switch (op) {
      case OP_LOAD:       /* load */
           if(file_interactive(sc)) {
                fprintf(sc->outport->_object._port->rep.stdio.file,
-               "Loading %s\n", strvalue(car(sc->args)));
+                       "Loading %s\n", strvalue(car(sc->args)));
           }
           if (!file_push(sc,strvalue(car(sc->args)))) {
                Error_1(sc,"unable to open", car(sc->args));
           }
-      else
-        {
-          sc->args = mk_integer(sc,sc->file_i);
-          s_goto(sc,OP_T0LVL);
-        }
-
+          else
+          {
+               sc->args = mk_integer(sc,sc->file_i);
+               s_goto(sc,OP_T0LVL);
+          }
+          
      case OP_T0LVL: /* top level */
-       /* If we reached the end of file, this loop is done. */
-       if(sc->loadport->_object._port->kind & port_saw_EOF)
-     {
-       if(sc->file_i == 0)
-         {
-           sc->args=sc->NIL;
-           s_goto(sc,OP_QUIT);
-         }
-       else
-         {
-           file_pop(sc);
-           s_return(sc,sc->value);
-         }
-       /* NOTREACHED */
-     }
+          /* If we reached the end of file, this loop is done. */
+          if(sc->loadport->_object._port->kind & port_saw_EOF)
+          {
+               if(sc->file_i == 0)
+               {
+                    sc->args = sc->NIL;
+                    s_goto(sc, OP_QUIT);
+               }
+               else
+               {
+                    file_pop(sc);
+                    s_return(sc, sc->value);
+               }
+               /* NOTREACHED */
+          }
+          
+          /* If interactive, be nice to user. */
+          if(file_interactive(sc))
+          {
+               sc->envir = sc->global_env;
+               dump_stack_reset(sc);
+               putstr(sc, "\n");
+               putstr(sc, prompt);
+          }
+          
+          /* Set up another iteration of REPL */
+          sc->nesting = 0;
+          sc->save_inport = sc->inport;
+          sc->inport = sc->loadport;
 
-       /* If interactive, be nice to user. */
-       if(file_interactive(sc))
-     {
-       sc->envir = sc->global_env;
-       dump_stack_reset(sc);
-       putstr(sc,"\n");
-       putstr(sc,prompt);
-     }
-
-       /* Set up another iteration of REPL */
-       sc->nesting=0;
-       sc->save_inport=sc->inport;
-       sc->inport = sc->loadport;
-       s_save(sc,OP_T0LVL, sc->NIL, sc->NIL);
-       s_save(sc,OP_VALUEPRINT, sc->NIL, sc->NIL);
-       s_save(sc,OP_T1LVL, sc->NIL, sc->NIL);
-       s_goto(sc,OP_READ_INTERNAL);
-
+          s_save(sc, OP_T0LVL, sc->NIL, sc->NIL);
+          s_save(sc, OP_VALUEPRINT, sc->NIL, sc->NIL);
+          s_save(sc, OP_T1LVL, sc->NIL, sc->NIL);
+          s_goto(sc, OP_READ_INTERNAL);
+          
      case OP_T1LVL: /* top level */
-          sc->code = sc->value;
-          sc->inport=sc->save_inport;
-          s_goto(sc,OP_EVAL);
-
+          sc->code   = sc->value;
+          sc->inport = sc->save_inport;
+          s_goto(sc, OP_EVAL);
+          
      case OP_READ_INTERNAL:       /* internal read */
           sc->tok = token(sc);
-          if(sc->tok==TOK_EOF)
-        { s_return(sc,sc->EOF_OBJ); }
+          
+          if(sc->tok == TOK_EOF) {
+               s_return(sc, sc->EOF_OBJ);
+          }
+          
           s_goto(sc,OP_RDSEXPR);
-
+          
      case OP_GENSYM:
           s_return(sc, gensym(sc));
-
+          
      case OP_VALUEPRINT: /* print evaluation result */
           /* OP_VALUEPRINT is always pushed, because when changing from
              non-interactive to interactive mode, it needs to be
              already on the stack */
-       if(sc->tracing) {
-     putstr(sc,"\nGives: ");
-       }
-       if(file_interactive(sc)) {
-     sc->print_flag = 1;
-     sc->args = sc->value;
-     s_goto(sc,OP_P0LIST);
-       } else {
-     s_return(sc,sc->value);
-       }
+          if(sc->tracing) {
+               putstr(sc, "\nGives: ");
+          }
 
+          if(file_interactive(sc)) {
+               sc->print_flag = 1;
+               sc->args       = sc->value;
+
+               s_goto(sc, OP_P0LIST);
+          } else {
+               s_return(sc, sc->value);
+          }
+          
      case OP_EVAL:       /* main part of evaluation */
 #if USE_TRACING
-       if(sc->tracing) {
-     /*s_save(sc,OP_VALUEPRINT,sc->NIL,sc->NIL);*/
-     s_save(sc,OP_REAL_EVAL,sc->args,sc->code);
-     sc->args=sc->code;
-     putstr(sc,"\nEval: ");
-     s_goto(sc,OP_P0LIST);
-       }
-       /* fall through */
+          if(sc->tracing) {
+               /*s_save(sc,OP_VALUEPRINT,sc->NIL,sc->NIL);*/
+               s_save(sc, OP_REAL_EVAL, sc->args, sc->code);
+               sc->args = sc->code;
+               putstr(sc, "\nEval: ");
+
+               s_goto(sc,OP_P0LIST);
+          }
+          /* fall through */
      case OP_REAL_EVAL:
 #endif
           if (is_symbol(sc->code)) {    /* symbol */
@@ -3247,7 +3296,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           } else {
                s_return(sc,sc->code);
           }
-
+          
      case OP_E0ARGS:     /* eval arguments */
           if (is_macro(sc->value)) {    /* macro expansion */
                s_save(sc,OP_DOMACRO, sc->NIL, sc->NIL);
@@ -3258,7 +3307,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                sc->code = cdr(sc->code);
                s_goto(sc,OP_E1ARGS);
           }
-
+          
      case OP_E1ARGS:     /* eval arguments */
           sc->args = cons(sc, sc->value, sc->args);
           if (is_pair(sc->code)) { /* continue */
@@ -3272,38 +3321,38 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                sc->args = cdr(sc->args);
                s_goto(sc,OP_APPLY);
           }
-
+          
 #if USE_TRACING
      case OP_TRACING: {
-       int tr=sc->tracing;
-       sc->tracing=ivalue(car(sc->args));
-       s_return(sc,mk_integer(sc,tr));
+          int tr=sc->tracing;
+          sc->tracing=ivalue(car(sc->args));
+          s_return(sc,mk_integer(sc,tr));
      }
 #endif
-
+          
      case OP_APPLY:      /* apply 'code' to 'args' */
 #if USE_TRACING
-       if(sc->tracing) {
-     s_save(sc,OP_REAL_APPLY,sc->args,sc->code);
-     sc->print_flag = 1;
-     /*  sc->args=cons(sc,sc->code,sc->args);*/
-         putstr(sc,"\nApply to: ");
-     s_goto(sc,OP_P0LIST);
-       }
-       /* fall through */
+          if(sc->tracing) {
+               s_save(sc,OP_REAL_APPLY,sc->args,sc->code);
+               sc->print_flag = 1;
+               /*  sc->args=cons(sc,sc->code,sc->args);*/
+               putstr(sc,"\nApply to: ");
+               s_goto(sc,OP_P0LIST);
+          }
+          /* fall through */
      case OP_REAL_APPLY:
 #endif
           if (is_proc(sc->code)) {
                s_goto(sc,procnum(sc->code));   /* PROCEDURE */
           } else if (is_foreign(sc->code))
-            {
-              /* Keep nested calls from GC'ing the arglist */
-              push_recent_alloc(sc,sc->args,sc->NIL);
+          {
+               /* Keep nested calls from GC'ing the arglist */
+               push_recent_alloc(sc,sc->args,sc->NIL);
                x=sc->code->_object._ff(sc,sc->args);
                s_return(sc,x);
           } else if (is_closure(sc->code) || is_macro(sc->code)
-             || is_promise(sc->code)) { /* CLOSURE */
-        /* Should not accept promise */
+                     || is_promise(sc->code)) { /* CLOSURE */
+               /* Should not accept promise */
                /* make environment */
                new_frame_in_env(sc, closure_env(sc->code));
                for (x = car(closure_code(sc->code)), y = sc->args;
@@ -3334,57 +3383,57 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           } else {
                Error_0(sc,"illegal function");
           }
-
+          
      case OP_DOMACRO:    /* do macro */
           sc->code = sc->value;
           s_goto(sc,OP_EVAL);
-
+          
 #if 1
      case OP_LAMBDA:     /* lambda */
           /* If the hook is defined, apply it to sc->code, otherwise
              set sc->value fall thru */
-          {
-               pointer f=find_slot_in_env(sc,sc->envir,sc->COMPILE_HOOK,1);
-               if(f==sc->NIL) {
-                    sc->value = sc->code;
-                    /* Fallthru */
-               } else {
-                    s_save(sc,OP_LAMBDA1,sc->args,sc->code);
-                    sc->args=cons(sc,sc->code,sc->NIL);
-                    sc->code=slot_value_in_env(f);
-                    s_goto(sc,OP_APPLY);
-               }
+     {
+          pointer f=find_slot_in_env(sc,sc->envir,sc->COMPILE_HOOK,1);
+          if(f==sc->NIL) {
+               sc->value = sc->code;
+               /* Fallthru */
+          } else {
+               s_save(sc,OP_LAMBDA1,sc->args,sc->code);
+               sc->args=cons(sc,sc->code,sc->NIL);
+               sc->code=slot_value_in_env(f);
+               s_goto(sc,OP_APPLY);
           }
-
+     }
+     
      case OP_LAMBDA1:
           s_return(sc,mk_closure(sc, sc->value, sc->envir));
-
+          
 #else
      case OP_LAMBDA:     /* lambda */
           s_return(sc,mk_closure(sc, sc->code, sc->envir));
-
+          
 #endif
-
+          
      case OP_MKCLOSURE: /* make-closure */
-       x=car(sc->args);
-       if(car(x)==sc->LAMBDA) {
-     x=cdr(x);
-       }
-       if(cdr(sc->args)==sc->NIL) {
-     y=sc->envir;
-       } else {
-     y=cadr(sc->args);
-       }
-       s_return(sc,mk_closure(sc, x, y));
-
+          x=car(sc->args);
+          if(car(x)==sc->LAMBDA) {
+               x=cdr(x);
+          }
+          if(cdr(sc->args)==sc->NIL) {
+               y=sc->envir;
+          } else {
+               y=cadr(sc->args);
+          }
+          s_return(sc,mk_closure(sc, x, y));
+          
      case OP_QUOTE:      /* quote */
           x=car(sc->code);
           s_return(sc,car(sc->code));
-
+          
      case OP_DEF0:  /* define */
           if(is_immutable(car(sc->code)))
-            Error_1(sc,"define: unable to alter immutable", car(sc->code));
-
+               Error_1(sc,"define: unable to alter immutable", car(sc->code));
+          
           if (is_pair(car(sc->code))) {
                x = caar(sc->code);
                sc->code = cons(sc, sc->LAMBDA, cons(sc, cdar(sc->code), cdr(sc->code)));
@@ -3397,41 +3446,41 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           }
           s_save(sc,OP_DEF1, sc->NIL, x);
           s_goto(sc,OP_EVAL);
-
+          
      case OP_DEF1:  /* define */
-       x=find_slot_in_env(sc,sc->envir,sc->code,0);
+          x=find_slot_in_env(sc,sc->envir,sc->code,0);
           if (x != sc->NIL) {
                set_slot_in_env(sc, x, sc->value);
           } else {
                new_slot_in_env(sc, sc->code, sc->value);
           }
           s_return(sc,sc->code);
-
-
+          
+          
      case OP_DEFP:  /* defined? */
           x=sc->envir;
           if(cdr(sc->args)!=sc->NIL) {
                x=cadr(sc->args);
           }
           s_retbool(find_slot_in_env(sc,x,car(sc->args),1)!=sc->NIL);
-
+          
      case OP_SET0:       /* set! */
           if(is_immutable(car(sc->code)))
-                Error_1(sc,"set!: unable to alter immutable variable",car(sc->code));
+               Error_1(sc,"set!: unable to alter immutable variable",car(sc->code));
           s_save(sc,OP_SET1, sc->NIL, car(sc->code));
           sc->code = cadr(sc->code);
           s_goto(sc,OP_EVAL);
-
+          
      case OP_SET1:       /* set! */
-       y=find_slot_in_env(sc,sc->envir,sc->code,1);
+          y=find_slot_in_env(sc,sc->envir,sc->code,1);
           if (y != sc->NIL) {
                set_slot_in_env(sc, y, sc->value);
                s_return(sc,sc->value);
           } else {
                Error_1(sc,"set!: unbound variable:", sc->code);
           }
-
-
+          
+          
      case OP_BEGIN:      /* begin */
           if (!is_pair(sc->code)) {
                s_return(sc,sc->code);
@@ -3441,26 +3490,26 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           }
           sc->code = car(sc->code);
           s_goto(sc,OP_EVAL);
-
+          
      case OP_IF0:        /* if */
           s_save(sc,OP_IF1, sc->NIL, cdr(sc->code));
           sc->code = car(sc->code);
           s_goto(sc,OP_EVAL);
-
+          
      case OP_IF1:        /* if */
           if (is_true(sc->value))
                sc->code = car(sc->code);
           else
                sc->code = cadr(sc->code);  /* (if #f 1) ==> () because
-                               * car(sc->NIL) = sc->NIL */
+                                            * car(sc->NIL) = sc->NIL */
           s_goto(sc,OP_EVAL);
-
+          
      case OP_LET0:       /* let */
           sc->args = sc->NIL;
           sc->value = sc->code;
           sc->code = is_symbol(car(sc->code)) ? cadr(sc->code) : car(sc->code);
           s_goto(sc,OP_LET1);
-
+          
      case OP_LET1:       /* let (calculate parameters) */
           sc->args = cons(sc, sc->value, sc->args);
           if (is_pair(sc->code)) { /* continue */
@@ -3478,7 +3527,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                sc->args = cdr(sc->args);
                s_goto(sc,OP_LET2);
           }
-
+          
      case OP_LET2:       /* let */
           new_frame_in_env(sc, sc->envir);
           for (x = is_symbol(car(sc->code)) ? cadr(sc->code) : car(sc->code), y = sc->args;
@@ -3488,9 +3537,9 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           if (is_symbol(car(sc->code))) {    /* named let */
                for (x = cadr(sc->code), sc->args = sc->NIL; x != sc->NIL; x = cdr(x)) {
                     if (!is_pair(x))
-                        Error_1(sc, "Bad syntax of binding in let :", x);
+                         Error_1(sc, "Bad syntax of binding in let :", x);
                     if (!is_list(sc, car(x)))
-                        Error_1(sc, "Bad syntax of binding in let :", car(x));
+                         Error_1(sc, "Bad syntax of binding in let :", car(x));
                     sc->args = cons(sc, caar(x), sc->args);
                }
                x = mk_closure(sc, cons(sc, reverse_in_place(sc, sc->NIL, sc->args), cddr(sc->code)), sc->envir);
@@ -3502,7 +3551,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                sc->args = sc->NIL;
           }
           s_goto(sc,OP_BEGIN);
-
+          
      case OP_LET0AST:    /* let* */
           if (car(sc->code) == sc->NIL) {
                new_frame_in_env(sc, sc->envir);
@@ -3515,11 +3564,11 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           s_save(sc,OP_LET1AST, cdr(sc->code), car(sc->code));
           sc->code = cadaar(sc->code);
           s_goto(sc,OP_EVAL);
-
+          
      case OP_LET1AST:    /* let* (make new frame) */
           new_frame_in_env(sc, sc->envir);
           s_goto(sc,OP_LET2AST);
-
+          
      case OP_LET2AST:    /* let* (calculate parameters) */
           new_slot_in_env(sc, caar(sc->code), sc->value);
           sc->code = cdr(sc->code);
@@ -3539,6 +3588,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
      }
      return sc->T;
 }
+
 
 static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
      pointer x, y;
