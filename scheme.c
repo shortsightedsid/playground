@@ -191,7 +191,8 @@ static double round_per_R5RS(double x);
 static int is_zero_double(double x);
 
 
-static INLINE int num_is_integer(pointer p) {
+static INLINE int num_is_integer(pointer p) 
+{
      return ((p)->_object._number.is_fixnum);
 }
 
@@ -486,7 +487,7 @@ static INLINE int Cislower(int c) { return isascii(c) && islower(c); }
 
 
 #if USE_ASCII_NAMES
-static const char *charnames[32]={
+static const char *charnames[32] = {
      "nul",
      "soh",
      "stx",
@@ -522,19 +523,20 @@ static const char *charnames[32]={
 };
 
 
-static int is_ascii_name(const char *name, int *pc) {
+static int is_ascii_name(const char *name, int *pc) 
+{
      int i;
 
-     for(i=0; i<32; i++) {
-          if(stricmp(name,charnames[i])==0) {
-               *pc=i;
+     for (i = 0; i < 32; i++) {
+          if (stricmp(name, charnames[i]) == 0) {
+               *pc = i;
 
                return 1;
           }
      }
 
-     if(stricmp(name,"del")==0) {
-          *pc=127;
+     if (stricmp(name, "del") == 0) {
+          *pc = 127;
 
           return 1;
      }
@@ -543,6 +545,7 @@ static int is_ascii_name(const char *name, int *pc) {
 }
 
 #endif
+
 
 static int file_push(scheme *sc, const char *fname);
 static void file_pop(scheme *sc);
@@ -2181,12 +2184,12 @@ INTERFACE void putcharacter(scheme *sc, int c)
 {
      port *pt = sc->outport->_object._port;
 
-     if(pt->kind & port_file) {
+     if (pt->kind & port_file) {
           fputc(c, pt->rep.stdio.file);
      } else {
-          if(pt->rep.string.curr != pt->rep.string.past_the_end) {
+          if (pt->rep.string.curr != pt->rep.string.past_the_end) {
                *pt->rep.string.curr++ = c;
-          } else if(pt->kind & port_srfi6 && realloc_port_string(sc, pt)) {
+          } else if (pt->kind & port_srfi6 && realloc_port_string(sc, pt)) {
                *pt->rep.string.curr++ = c;
           }
      }
