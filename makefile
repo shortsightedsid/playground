@@ -18,7 +18,7 @@
 #AR= echo
 
 # Unix, generally
-CC = gcc -fpic
+CC = gcc -fpic $(CFLAGS)
 DEBUG=-g -Wall -Wno-char-subscripts -O
 Osuf=o
 SOsuf=so
@@ -31,7 +31,7 @@ AR= ar crs
 
 # Linux
 LD = gcc
-LDFLAGS = -shared
+LOCAL_LDFLAGS = -shared $(LDFLAGS)
 DEBUG=-g -Wno-char-subscripts -O
 SYS_LIBS= -ldl
 PLATFORM_FEATURES= -DSUN_DL=1
@@ -46,7 +46,7 @@ PLATFORM_FEATURES= -DSUN_DL=1
 #SOsuf=so
 #EXE_EXT=
 #LD = ld
-#LDFLAGS = -G -Bsymbolic -z text
+#LOCAL_LDFLAGS = -G -Bsymbolic -z text $(LDFLAGS)
 #LIBPREFIX = lib
 #OUT = -o $@
 
@@ -63,7 +63,7 @@ all: $(LIBTARGET) $(STATICLIBTARGET) scheme$(EXE_EXT)
 	$(CC) -I. -c $(DEBUG) $(FEATURES) $(DL_FLAGS) $<
 
 $(LIBTARGET): $(OBJS)
-	$(LD) $(LDFLAGS) $(OUT) $(OBJS) $(SYS_LIBS)
+	$(LD) $(LOCAL_LDFLAGS) $(OUT) $(OBJS) $(SYS_LIBS)
 
 scheme$(EXE_EXT): $(OBJS)
 	$(CC) -o $@ $(DEBUG) $(OBJS) $(SYS_LIBS)
