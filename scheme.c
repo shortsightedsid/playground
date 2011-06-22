@@ -5527,39 +5527,49 @@ void scheme_deinit(scheme *sc)
      char *fname;
 #endif
      
-     sc->oblist=sc->NIL;
-     sc->global_env=sc->NIL;
+     sc->oblist     = sc->NIL;
+     sc->global_env = sc->NIL;
+
      dump_stack_free(sc);
-     sc->envir=sc->NIL;
-     sc->code=sc->NIL;
-     sc->args=sc->NIL;
-     sc->value=sc->NIL;
-     if(is_port(sc->inport)) {
+
+     sc->envir = sc->NIL;
+     sc->code  = sc->NIL;
+     sc->args  = sc->NIL;
+     sc->value = sc->NIL;
+
+     if (is_port(sc->inport)) {
           typeflag(sc->inport) = T_ATOM;
      }
-     sc->inport=sc->NIL;
-     sc->outport=sc->NIL;
-     if(is_port(sc->save_inport)) {
+
+     sc->inport  = sc->NIL;
+     sc->outport = sc->NIL;
+
+     if (is_port(sc->save_inport)) {
           typeflag(sc->save_inport) = T_ATOM;
      }
-     sc->save_inport=sc->NIL;
+
+     sc->save_inport = sc->NIL;
+
      if(is_port(sc->loadport)) {
           typeflag(sc->loadport) = T_ATOM;
      }
-     sc->loadport=sc->NIL;
-     sc->gc_verbose=0;
+
+     sc->loadport = sc->NIL;
+     sc->gc_verbose = 0;
+
      gc(sc,sc->NIL,sc->NIL);
      
-     for(i=0; i<=sc->last_cell_seg; i++) {
+     for (i = 0; i <= sc->last_cell_seg; i++) {
           sc->free(sc->alloc_seg[i]);
      }
      
 #if SHOW_ERROR_LINE
      fname = sc->load_stack[i].rep.stdio.filename;
      
-     for(i=0; i<sc->file_i; i++) {
-          if(fname)
+     for (i = 0; i < sc->file_i; i++) {
+          if (fname) {
                sc->free(fname);
+          }
      }
 #endif
 }
@@ -5626,7 +5636,8 @@ void scheme_define(scheme *sc, pointer envir, pointer symbol, pointer value)
 {
      pointer x;
      
-     x=find_slot_in_env(sc,envir,symbol,0);
+     x = find_slot_in_env(sc, envir, symbol, 0);
+
      if (x != sc->NIL) {
           set_slot_in_env(sc, x, value);
      } else {
@@ -5650,8 +5661,8 @@ void scheme_register_foreign_func_list(scheme * sc,
                                        int count)
 {
      int i;
-     for(i = 0; i < count; i++)
-     {
+
+     for(i = 0; i < count; i++) {
           scheme_register_foreign_func(sc, list + i);
      }
 }
@@ -5659,20 +5670,21 @@ void scheme_register_foreign_func_list(scheme * sc,
 
 pointer scheme_apply0(scheme *sc, const char *procname)
 { 
-     return scheme_eval(sc, cons(sc,mk_symbol(sc,procname),sc->NIL)); 
+     return scheme_eval(sc, cons(sc, 
+                                 mk_symbol(sc, procname), 
+                                 sc->NIL)); 
 }
 
 
 void save_from_C_call(scheme *sc)
 {
-     pointer saved_data =
-          cons(sc,
-               car(sc->sink),
-               cons(sc,
-                    sc->envir,
-                    sc->dump));
+     pointer saved_data = cons(sc, car(sc->sink), cons(sc,
+                                                       sc->envir,
+                                                       sc->dump));
+
      /* Push */
      sc->c_nest = cons(sc, saved_data, sc->c_nest);
+
      /* Truncate the dump stack so TS will return here when done, not
         directly resume pre-C-call operations. */
      dump_stack_reset(sc);
@@ -5684,6 +5696,7 @@ void restore_from_C_call(scheme *sc)
      car(sc->sink) = caar(sc->c_nest);
      sc->envir = cadar(sc->c_nest);
      sc->dump = cdr(cdar(sc->c_nest));
+
      /* Pop */
      sc->c_nest = cdr(sc->c_nest);
 }
@@ -5693,15 +5706,20 @@ void restore_from_C_call(scheme *sc)
 pointer scheme_call(scheme *sc, pointer func, pointer args)
 {
      int old_repl = sc->interactive_repl;
+
      sc->interactive_repl = 0;
      save_from_C_call(sc);
-     sc->envir = sc->global_env;
-     sc->args = args;
-     sc->code = func;
-     sc->retcode = 0;
+
+     sc->envir            = sc->global_env;
+     sc->args             = args;
+     sc->code             = func;
+     sc->retcode          = 0;
+
      Eval_Cycle(sc, OP_APPLY);
+
      sc->interactive_repl = old_repl;
      restore_from_C_call(sc);
+
      return sc->value;
 }
 
@@ -5709,14 +5727,19 @@ pointer scheme_call(scheme *sc, pointer func, pointer args)
 pointer scheme_eval(scheme *sc, pointer obj)
 {
      int old_repl = sc->interactive_repl;
+
      sc->interactive_repl = 0;
      save_from_C_call(sc);
-     sc->args = sc->NIL;
-     sc->code = obj;
-     sc->retcode = 0;
+
+     sc->args             = sc->NIL;
+     sc->code             = obj;
+     sc->retcode          = 0;
+
      Eval_Cycle(sc, OP_EVAL);
+
      sc->interactive_repl = old_repl;
      restore_from_C_call(sc);
+
      return sc->value;
 }
 
@@ -5786,6 +5809,7 @@ int main(int argc, char **argv)
 
      if (!scheme_init(&sc)) {
           fprintf(stderr, "Could not initialize!\n");
+
           return 2;
      }
 
