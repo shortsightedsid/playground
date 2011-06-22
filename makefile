@@ -78,7 +78,7 @@ clean:
 	$(RM) $(OBJS) $(LIBTARGET) $(STATICLIBTARGET) scheme$(EXE_EXT)
 	$(RM) tinyscheme.ilk tinyscheme.map tinyscheme.pdb tinyscheme.exp
 	$(RM) scheme.ilk scheme.map scheme.pdb scheme.lib scheme.exp
-	$(RM) *~ cscope.out
+	$(RM) *~ cscope.out TAGS
 
 TAGS_SRCS = scheme.h scheme.c dynload.h dynload.c
 
