@@ -780,8 +780,7 @@ static int num_gt(num a, num b)
 
 static int num_ge(num a, num b)
 {
-
- return !num_lt(a,b);
+     return !num_lt(a,b);
 }
 
 
@@ -869,7 +868,8 @@ static int alloc_cellseg(scheme *sc, int n)
           if (sc->last_cell_seg >= CELL_NSEGMENT - 1)
                return k;
 
-          cp = (char*) sc->malloc(CELL_SEGSIZE * sizeof(struct cell) + adj);
+          cp = (char*) sc->malloc(CELL_SEGSIZE * 
+                                  sizeof(struct cell) + adj);
 
           if (cp == 0)
                return k;
@@ -1236,11 +1236,14 @@ static INLINE pointer oblist_find_by_name(scheme *sc, const char *name)
      char *s;
      
      location = hash_fn(name, ivalue_unchecked(sc->oblist));
-     for (x = vector_elem(sc->oblist, location); x != sc->NIL; x = cdr(x)) {
+     for (x = vector_elem(sc->oblist, location); 
+          x != sc->NIL; 
+          x = cdr(x)) 
+     {
           s = symname(car(x));
 
           /* case-insensitive, per R5RS section 2. */
-          if(stricmp(name, s) == 0) {
+          if (stricmp(name, s) == 0) {
                return car(x);
           }
      }
@@ -1256,7 +1259,10 @@ static pointer oblist_all_symbols(scheme *sc)
      pointer ob_list = sc->NIL;
      
      for (i = 0; i < ivalue_unchecked(sc->oblist); i++) {
-          for (x  = vector_elem(sc->oblist, i); x != sc->NIL; x = cdr(x)) {
+          for (x  = vector_elem(sc->oblist, i); 
+               x != sc->NIL; 
+               x = cdr(x)) 
+          {
                ob_list = cons(sc, x, ob_list);
           }
      }
@@ -1526,15 +1532,20 @@ static pointer mk_atom(scheme *sc, char *q) {
      int has_fp_exp = 0;
      
 #if USE_COLON_HOOK
-     if((p = strstr(q, "::")) != 0) {
+     if ((p = strstr(q, "::")) != 0) {
           *p=0;
 
           return cons(sc, sc->COLON_HOOK,
                       cons(sc,
                            cons(sc,
                                 sc->QUOTE,
-                                cons(sc, mk_atom(sc, p + 2), sc->NIL)),
-                           cons(sc, mk_symbol(sc, strlwr(q)), sc->NIL)));
+                                cons(sc, 
+                                     mk_atom(sc, p + 2), 
+                                     sc->NIL)),
+                           cons(sc, 
+                                mk_symbol(sc, 
+                                          strlwr(q)), 
+                                sc->NIL)));
      }
 
 #endif
@@ -1567,15 +1578,15 @@ static pointer mk_atom(scheme *sc, char *q) {
      
      for ( ; (c = *p) != 0; ++p) {
           if (!isdigit(c)) {
-               if(c == '.') {
-                    if(!has_dec_point) {
+               if (c == '.') {
+                    if (!has_dec_point) {
                          has_dec_point = 1;
 
                          continue;
                     }
                }
                else if ((c == 'e') || (c == 'E')) {
-                    if(!has_fp_exp) {
+                    if (!has_fp_exp) {
                          has_dec_point = 1; /* decimal point illegal
                                                from now on */
                          p++;
@@ -1590,7 +1601,7 @@ static pointer mk_atom(scheme *sc, char *q) {
           }
      }
 
-     if(has_dec_point) {
+     if (has_dec_point) {
           return mk_real(sc, atof(q));
      }
      
@@ -1771,10 +1782,10 @@ static void gc(scheme *sc, pointer a, pointer b)
      clrmark(sc->NIL);
      sc->fcells = 0;
      sc->free_cell = sc->NIL;
-     /* free-list is kept sorted by address so as to maintain consecutive
-        ranges, if possible, for use with vectors. Here we scan the cells
-        (which are also kept sorted by address) downwards to build the
-        free-list in sorted order.
+     /* free-list is kept sorted by address so as to maintain
+        consecutive ranges, if possible, for use with vectors. Here 
+        we scan the cells (which are also kept sorted by address) 
+        downwards to build the free-list in sorted order.
      */
      for (i = sc->last_cell_seg; i >= 0; i--) {
           p = sc->cell_seg[i] + CELL_SEGSIZE;
