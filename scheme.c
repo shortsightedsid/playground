@@ -971,7 +971,7 @@ static pointer _get_cell(scheme *sc, pointer a, pointer b)
 /* make sure that there is a given number of cells free */
 static pointer reserve_cells(scheme *sc, int n) 
 {
-     if(sc->no_memory) {
+     if (sc->no_memory) {
           return sc->NIL;
      }
      
@@ -1007,7 +1007,7 @@ static pointer get_consecutive_cells(scheme *sc, int n)
 {
      pointer x;
      
-     if(sc->no_memory) {
+     if (sc->no_memory) {
           return sc->sink;
      }
 
@@ -1323,7 +1323,7 @@ static pointer mk_port(scheme *sc, port *p)
 {
      pointer x = get_cell(sc, sc->NIL, sc->NIL);
      
-     typeflag(x) = T_PORT | T_ATOM;
+     typeflag(x) = (T_PORT | T_ATOM);
      x->_object._port = p;
      
      return (x);
@@ -1502,12 +1502,13 @@ INTERFACE pointer mk_symbol(scheme *sc, const char *name)
 }
 
 
-INTERFACE pointer gensym(scheme *sc) {
+INTERFACE pointer gensym(scheme *sc)
+{
      pointer x;
      char name[40];
 
      for(; sc->gensym_cnt < LONG_MAX; sc->gensym_cnt++) {
-          snprintf(name,40,"gensym-%ld",sc->gensym_cnt);
+          snprintf(name, 40, "gensym-%ld", sc->gensym_cnt);
 
           /* first check oblist */
           x = oblist_find_by_name(sc, name);
@@ -1526,10 +1527,11 @@ INTERFACE pointer gensym(scheme *sc) {
 
 
 /* make symbol or number atom from string */
-static pointer mk_atom(scheme *sc, char *q) {
-     char    c, *p;
-     int has_dec_point=0;
-     int has_fp_exp = 0;
+static pointer mk_atom(scheme *sc, char *q) 
+{
+     char c, *p;
+     int has_dec_point = 0;
+     int has_fp_exp    = 0;
      
 #if USE_COLON_HOOK
      if ((p = strstr(q, "::")) != 0) {
@@ -1838,8 +1840,9 @@ static int file_push(scheme *sc, const char *fname)
 {
      FILE *fin = NULL;
      
-     if (sc->file_i == MAXFIL-1)
+     if (sc->file_i == MAXFIL - 1) {
           return 0;
+     }
 
      fin = fopen(fname, "r");
 
@@ -1849,13 +1852,15 @@ static int file_push(scheme *sc, const char *fname)
           sc->load_stack[sc->file_i].rep.stdio.file      = fin;
           sc->load_stack[sc->file_i].rep.stdio.closeit   = 1;
           sc->nesting_stack[sc->file_i]                  = 0;
-          sc->loadport->_object._port                    = sc->load_stack+sc->file_i;
+          sc->loadport->_object._port                    = sc->load_stack + sc->file_i;
           
 #if SHOW_ERROR_LINE
           sc->load_stack[sc->file_i].rep.stdio.curr_line = 0;
 
-          if(fname)
-               sc->load_stack[sc->file_i].rep.stdio.filename = store_string(sc, strlen(fname), fname, 0);
+          if(fname) {
+               sc->load_stack[sc->file_i].rep.stdio.filename = 
+                    store_string(sc, strlen(fname), fname, 0);
+          }
 #endif
           
      }
@@ -1879,8 +1884,9 @@ static void file_pop(scheme *sc)
 
 static int file_interactive(scheme *sc) 
 {
-     return sc->file_i == 0 && sc->load_stack[0].rep.stdio.file == stdin
-          && sc->inport->_object._port->kind & port_file;
+     return sc->file_i == 0 && 
+          sc->load_stack[0].rep.stdio.file == stdin && 
+          sc->inport->_object._port->kind & port_file;
 }
 
 
@@ -1890,15 +1896,15 @@ static port *port_rep_from_filename(scheme *sc, const char *fn, int prop)
      char *rw;
      port *pt;
 
-     if(prop == (port_input|port_output)) {
+     if (prop == (port_input|port_output)) {
           rw = "a+";
-     } else if(prop == port_output) {
+     } else if (prop == port_output) {
           rw = "w";
      } else {
           rw = "r";
      }
 
-     f=fopen(fn, rw);
+     f = fopen(fn, rw);
 
      if(f == 0) {
           return 0;
@@ -1908,8 +1914,9 @@ static port *port_rep_from_filename(scheme *sc, const char *fn, int prop)
      pt->rep.stdio.closeit = 1;
      
 #if SHOW_ERROR_LINE
-     if(fn)
+     if (fn) {
           pt->rep.stdio.filename = store_string(sc, strlen(fn), fn, 0);
+     }
      
      pt->rep.stdio.curr_line = 0;
 #endif
@@ -1924,7 +1931,7 @@ static pointer port_from_filename(scheme *sc, const char *fn, int prop)
 
      pt = port_rep_from_filename(sc, fn, prop);
 
-     if(pt == 0) {
+     if (pt == 0) {
           return sc->NIL;
      }
 
@@ -1936,7 +1943,8 @@ static port *port_rep_from_file(scheme *sc, FILE *f, int prop)
 {
     port *pt;
 
-    pt = (port *)sc->malloc(sizeof *pt);
+    pt = (port *) sc->malloc(sizeof *pt);
+
     if (pt == NULL) {
         return NULL;
     }
@@ -1955,7 +1963,7 @@ static pointer port_from_file(scheme *sc, FILE *f, int prop)
 
      pt = port_rep_from_file(sc, f, prop);
 
-     if(pt == 0) {
+     if (pt == 0) {
           return sc->NIL;
      }
 
@@ -1967,9 +1975,9 @@ static port *port_rep_from_string(scheme *sc, char *start, char *past_the_end, i
 {
      port *pt;
 
-     pt = (port*)sc->malloc(sizeof(port));
+     pt = (port *) sc->malloc(sizeof(port));
 
-     if(pt == 0) {
+     if (pt == 0) {
           return 0;
      }
 
@@ -1988,7 +1996,7 @@ static pointer port_from_string(scheme *sc, char *start, char *past_the_end, int
 
      pt = port_rep_from_string(sc, start, past_the_end, prop);
 
-     if(pt == 0) {
+     if (pt == 0) {
           return sc->NIL;
      }
 
@@ -2004,15 +2012,15 @@ static port *port_rep_from_scratch(scheme *sc)
      port *pt;
      char *start;
 
-     pt = (port*)sc->malloc(sizeof(port));
+     pt = (port *) sc->malloc(sizeof(port));
 
-     if(pt == 0) {
+     if (pt == 0) {
           return 0;
      }
 
      start = sc->malloc(BLOCK_SIZE);
 
-     if(start == 0) {
+     if (start == 0) {
           return 0;
      }
 
@@ -2035,7 +2043,7 @@ static pointer port_from_scratch(scheme *sc)
 
      pt = port_rep_from_scratch(sc);
 
-     if(pt == 0) {
+     if (pt == 0) {
           return sc->NIL;
      }
 
@@ -2076,14 +2084,13 @@ static int inchar(scheme *sc)
      
      pt = sc->inport->_object._port;
 
-     if(pt->kind & port_saw_EOF)
-     { 
+     if (pt->kind & port_saw_EOF) { 
           return EOF; 
      }
 
      c = basic_inchar(pt);
 
-     if(c == EOF && sc->inport == sc->loadport) {
+     if (c == EOF && sc->inport == sc->loadport) {
           /* Instead, set port_saw_EOF */
           pt->kind |= port_saw_EOF;
           
@@ -2098,10 +2105,10 @@ static int inchar(scheme *sc)
 
 static int basic_inchar(port *pt) 
 {
-     if(pt->kind & port_file) {
+     if (pt->kind & port_file) {
           return fgetc(pt->rep.stdio.file);
      } else {
-          if(*pt->rep.string.curr == 0 ||
+          if (*pt->rep.string.curr == 0 ||
              pt->rep.string.curr == pt->rep.string.past_the_end) {
                return EOF;
           } else {
@@ -2116,11 +2123,11 @@ static void backchar(scheme *sc, int c)
 {
      port *pt;
 
-     if(c == EOF) return;
+     if (c == EOF) return;
 
      pt = sc->inport->_object._port;
 
-     if(pt->kind&port_file) {
+     if (pt->kind & port_file) {
           ungetc(c, pt->rep.stdio.file);
      } else {
           if(pt->rep.string.curr != pt->rep.string.start) {
@@ -2136,8 +2143,8 @@ static int realloc_port_string(scheme *sc, port *p)
      size_t new_size = p->rep.string.past_the_end - start + 1 + BLOCK_SIZE;
      char *str = sc->malloc(new_size);
 
-     if(str) {
-          memset(str,' ',new_size-1);
+     if (str) {
+          memset(str, ' ', new_size - 1);
 
           str[new_size - 1] = '\0';
           strcpy(str, start);
@@ -2159,13 +2166,13 @@ INTERFACE void putstr(scheme *sc, const char *s)
 {
      port *pt = sc->outport->_object._port;
 
-     if(pt->kind & port_file) {
+     if (pt->kind & port_file) {
           fputs(s, pt->rep.stdio.file);
      } else {
-          for(; *s; s++) {
-               if(pt->rep.string.curr != pt->rep.string.past_the_end) {
+          for (; *s; s++) {
+               if (pt->rep.string.curr != pt->rep.string.past_the_end) {
                     *pt->rep.string.curr++ = *s;
-               } else if(pt->kind&port_srfi6 && realloc_port_string(sc, pt)) {
+               } else if (pt->kind & port_srfi6 && realloc_port_string(sc, pt)) {
                     *pt->rep.string.curr++ = *s;
                }
           }
@@ -2177,13 +2184,13 @@ static void putchars(scheme *sc, const char *s, int len)
 {
      port *pt = sc->outport->_object._port;
 
-     if(pt->kind & port_file) {
+     if (pt->kind & port_file) {
           fwrite(s, 1, len, pt->rep.stdio.file);
      } else {
-          for(; len; len--) {
-               if(pt->rep.string.curr != pt->rep.string.past_the_end) {
+          for (; len; len--) {
+               if (pt->rep.string.curr != pt->rep.string.past_the_end) {
                     *pt->rep.string.curr++ = *s++;
-               } else if(pt->kind & port_srfi6 && realloc_port_string(sc, pt)) {
+               } else if (pt->kind & port_srfi6 && realloc_port_string(sc, pt)) {
                     *pt->rep.string.curr++ = *s++;
                }
           }
