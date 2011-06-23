@@ -2975,52 +2975,61 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
      const char *str = s;
 #if USE_ERROR_HOOK
      pointer x;
-     pointer hdl=sc->ERROR_HOOK;
+     pointer hdl = sc->ERROR_HOOK;
 #endif
 
 #if SHOW_ERROR_LINE
      char sbuf[STRBUFFSIZE];
 
      /* make sure error is not in REPL */
-     if(sc->load_stack[sc->file_i].rep.stdio.file != stdin) {
+     if (sc->load_stack[sc->file_i].rep.stdio.file != stdin) {
        int ln = sc->load_stack[sc->file_i].rep.stdio.curr_line;
        const char *fname = sc->load_stack[sc->file_i].rep.stdio.filename;
 
        /* should never happen */
-       if(!fname) fname = "<unknown>";
+       if (!fname) fname = "<unknown>";
 
        /* we started from 0 */
        ln++;
        snprintf(sbuf, STRBUFFSIZE, "(%s : %i) %s", fname, ln, s);
 
-       str = (const char*)sbuf;
+       str = (const char*) sbuf;
      }
 #endif
 
 #if USE_ERROR_HOOK
-     x=find_slot_in_env(sc,sc->envir,hdl,1);
-    if (x != sc->NIL) {
-         if(a!=0) {
-               sc->code = cons(sc, cons(sc, sc->QUOTE, cons(sc,(a), sc->NIL)), sc->NIL);
+     x = find_slot_in_env(sc, sc->envir, hdl, 1);
+
+     if (x != sc->NIL) {
+
+         if (a != 0) {
+               sc->code = cons(sc, cons(sc, 
+                                        sc->QUOTE, cons(sc, 
+                                                        (a), sc->NIL)),
+                               sc->NIL);
          } else {
                sc->code = sc->NIL;
          }
+
          sc->code = cons(sc, mk_string(sc, str), sc->code);
          setimmutable(car(sc->code));
          sc->code = cons(sc, slot_value_in_env(x), sc->code);
          sc->op = (int)OP_EVAL;
+
          return sc->T;
     }
 #endif
 
-    if(a!=0) {
+    if (a != 0) {
           sc->args = cons(sc, (a), sc->NIL);
     } else {
           sc->args = sc->NIL;
     }
+
     sc->args = cons(sc, mk_string(sc, str), sc->args);
     setimmutable(car(sc->args));
     sc->op = (int)OP_ERR0;
+
     return sc->T;
 }
 
@@ -3208,30 +3217,25 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op)
      
      switch (op) {
      case OP_LOAD:       /* load */
-          if(file_interactive(sc)) {
+          if (file_interactive(sc)) {
                fprintf(sc->outport->_object._port->rep.stdio.file,
                        "Loading %s\n", strvalue(car(sc->args)));
           }
-          if (!file_push(sc,strvalue(car(sc->args)))) {
-               Error_1(sc,"unable to open", car(sc->args));
-          }
-          else
-          {
-               sc->args = mk_integer(sc,sc->file_i);
-               s_goto(sc,OP_T0LVL);
+
+          if (!file_push(sc, strvalue(car(sc->args)))) {
+               Error_1(sc, "unable to open", car(sc->args));
+          } else {
+               sc->args = mk_integer(sc, sc->file_i);
+               s_goto(sc, OP_T0LVL);
           }
           
      case OP_T0LVL: /* top level */
           /* If we reached the end of file, this loop is done. */
-          if(sc->loadport->_object._port->kind & port_saw_EOF)
-          {
-               if(sc->file_i == 0)
-               {
+          if (sc->loadport->_object._port->kind & port_saw_EOF) {
+               if (sc->file_i == 0) {
                     sc->args = sc->NIL;
                     s_goto(sc, OP_QUIT);
-               }
-               else
-               {
+               } else {
                     file_pop(sc);
                     s_return(sc, sc->value);
                }
@@ -3239,8 +3243,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op)
           }
           
           /* If interactive, be nice to user. */
-          if(file_interactive(sc))
-          {
+          if (file_interactive(sc)) {
                sc->envir = sc->global_env;
                dump_stack_reset(sc);
                putstr(sc, "\n");
@@ -4492,15 +4495,17 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op)
           s_return(sc,sc->T);
           
      case OP_ERR0:  /* error */
-          sc->retcode=-1;
+          sc->retcode = -1;
+
           if (!is_string(car(sc->args))) {
-               sc->args=cons(sc,mk_string(sc," -- "),sc->args);
+               sc->args = cons(sc,mk_string(sc," -- "),sc->args);
                setimmutable(car(sc->args));
           }
+
           putstr(sc, "Error: ");
           putstr(sc, strvalue(car(sc->args)));
           sc->args = cdr(sc->args);
-          s_goto(sc,OP_ERR1);
+          s_goto(sc, OP_ERR1);
           
      case OP_ERR1:  /* error */
           putstr(sc, " ");
@@ -4570,9 +4575,10 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op)
           }
 #endif /* USE_PLIST */
      case OP_QUIT:       /* quit */
-          if(is_pair(sc->args)) {
-               sc->retcode=ivalue(car(sc->args));
+          if (is_pair(sc->args)) {
+               sc->retcode = ivalue(car(sc->args));
           }
+
           return (sc->NIL);
           
      case OP_GC:         /* gc */
@@ -4699,11 +4705,13 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op)
 {
      pointer x;
      
-     if(sc->nesting!=0) {
-          int n=sc->nesting;
-          sc->nesting=0;
-          sc->retcode=-1;
-          Error_1(sc,"unmatched parentheses:",mk_integer(sc,n));
+     if (sc->nesting != 0) {
+          int n = sc->nesting;
+
+          sc->nesting = 0;
+          sc->retcode = -1;
+
+          Error_1(sc, "unmatched parentheses:", mk_integer(sc, n));
      }
      
      switch (op) {
@@ -5568,14 +5576,14 @@ void scheme_deinit(scheme *sc)
 
      sc->save_inport = sc->NIL;
 
-     if(is_port(sc->loadport)) {
+     if (is_port(sc->loadport)) {
           typeflag(sc->loadport) = T_ATOM;
      }
 
      sc->loadport = sc->NIL;
      sc->gc_verbose = 0;
 
-     gc(sc,sc->NIL,sc->NIL);
+     gc(sc, sc->NIL, sc->NIL);
      
      for (i = 0; i <= sc->last_cell_seg; i++) {
           sc->free(sc->alloc_seg[i]);
@@ -5595,35 +5603,43 @@ void scheme_deinit(scheme *sc)
 
 void scheme_load_file(scheme *sc, FILE *fin)
 { 
-     scheme_load_named_file(sc,fin,0); 
+     scheme_load_named_file(sc, fin, 0); 
 }
 
 
 void scheme_load_named_file(scheme *sc, FILE *fin, const char *filename) 
 {
      dump_stack_reset(sc);
-     sc->envir = sc->global_env;
-     sc->file_i=0;
-     sc->load_stack[0].kind=port_input|port_file;
-     sc->load_stack[0].rep.stdio.file=fin;
-     sc->loadport=mk_port(sc,sc->load_stack);
-     sc->retcode=0;
-     if(fin==stdin) {
-          sc->interactive_repl=1;
+
+     sc->envir                        = sc->global_env;
+     sc->file_i                       = 0;
+     sc->load_stack[0].kind           = port_input | port_file;
+     sc->load_stack[0].rep.stdio.file = fin;
+     sc->loadport                     = mk_port(sc, sc->load_stack);
+     sc->retcode                      = 0;
+
+     if (fin == stdin) {
+          sc->interactive_repl = 1;
      }
      
 #if SHOW_ERROR_LINE
      sc->load_stack[0].rep.stdio.curr_line = 0;
-     if(fin!=stdin && filename)
-          sc->load_stack[0].rep.stdio.filename = store_string(sc, strlen(filename), filename, 0);
+
+     if (fin != stdin && filename) {
+          sc->load_stack[0].rep.stdio.filename = 
+               store_string(sc, strlen(filename), filename, 0);
+     }
 #endif
      
-     sc->inport=sc->loadport;
-     sc->args = mk_integer(sc,sc->file_i);
+     sc->inport = sc->loadport;
+     sc->args = mk_integer(sc, sc->file_i);
+
      Eval_Cycle(sc, OP_T0LVL);
-     typeflag(sc->loadport)=T_ATOM;
-     if(sc->retcode==0) {
-          sc->retcode=sc->nesting!=0;
+
+     typeflag(sc->loadport) = T_ATOM;
+
+     if (sc->retcode == 0) {
+          sc->retcode = sc->nesting != 0;
      }
 }
 
@@ -5631,21 +5647,28 @@ void scheme_load_named_file(scheme *sc, FILE *fin, const char *filename)
 void scheme_load_string(scheme *sc, const char *cmd) 
 {
      dump_stack_reset(sc);
-     sc->envir = sc->global_env;
-     sc->file_i=0;
-     sc->load_stack[0].kind=port_input|port_string;
-     sc->load_stack[0].rep.string.start=(char*)cmd; /* This func respects const */
-     sc->load_stack[0].rep.string.past_the_end=(char*)cmd+strlen(cmd);
-     sc->load_stack[0].rep.string.curr=(char*)cmd;
-     sc->loadport=mk_port(sc,sc->load_stack);
-     sc->retcode=0;
-     sc->interactive_repl=0;
-     sc->inport=sc->loadport;
-     sc->args = mk_integer(sc,sc->file_i);
+
+     sc->envir                                 = sc->global_env;
+     sc->file_i                                = 0;
+
+     sc->load_stack[0].kind                    = port_input|port_string;
+     /* This func respects const */
+     sc->load_stack[0].rep.string.start        = (char *) cmd; 
+     sc->load_stack[0].rep.string.past_the_end = (char *) cmd + strlen(cmd);
+     sc->load_stack[0].rep.string.curr         = (char *) cmd;
+
+     sc->loadport                              = mk_port(sc,sc->load_stack);
+     sc->retcode                               = 0;
+     sc->interactive_repl                      = 0;
+     sc->inport                                = sc->loadport;
+     sc->args                                  = mk_integer(sc,sc->file_i);
+
      Eval_Cycle(sc, OP_T0LVL);
-     typeflag(sc->loadport)=T_ATOM;
-     if(sc->retcode==0) {
-          sc->retcode=sc->nesting!=0;
+
+     typeflag(sc->loadport) = T_ATOM;
+
+     if (sc->retcode == 0) {
+          sc->retcode = sc->nesting != 0;
      }
 }
 
@@ -5812,7 +5835,6 @@ int main(int argc, char **argv)
      scheme sc;
      FILE *fin;
      char *file_name = InitFile;
-     int retcode;
      int isfile = 1;
      
      if (argc == 1) {
@@ -5908,10 +5930,9 @@ int main(int argc, char **argv)
           scheme_load_named_file(&sc, stdin, 0);
      }
 
-     retcode = sc.retcode;
      scheme_deinit(&sc);
      
-     return retcode;
+     return sc.retcode;
 }
 
 #endif
