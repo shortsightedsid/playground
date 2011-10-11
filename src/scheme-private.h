@@ -12,50 +12,50 @@ extern "C" {
 #endif
 
 enum scheme_port_kind {
-  port_free=0,
-  port_file=1,
-  port_string=2,
-  port_srfi6=4,
-  port_input=16,
-  port_output=32,
-  port_saw_EOF=64,
+     port_free    = 0,
+     port_file    = 1,
+     port_string  = 2,
+     port_srfi6   = 4,
+     port_input   = 16,
+     port_output  = 32,
+     port_saw_EOF = 64,
 };
 
 typedef struct port {
-  unsigned char kind;
-  union {
-    struct {
-      FILE *file;
-      int closeit;
+     unsigned char kind;
+     union {
+          struct {
+               FILE *file;
+               int closeit;
 #if SHOW_ERROR_LINE
-      int curr_line;
-      char *filename;
+               int curr_line;
+               char *filename;
 #endif
-    } stdio;
-    struct {
-      char *start;
-      char *past_the_end;
-      char *curr;
-    } string;
-  } rep;
+          } stdio;
+          struct {
+               char *start;
+               char *past_the_end;
+               char *curr;
+          } string;
+     } rep;
 } port;
 
 /* cell structure */
 struct cell {
-  unsigned int _flag;
-  union {
-    struct {
-      char   *_svalue;
-      int   _length;
-    } _string;
-    num _number;
-    port *_port;
-    foreign_func _ff;
-    struct {
-      struct cell *_car;
-      struct cell *_cdr;
-    } _cons;
-  } _object;
+     unsigned int _flag;
+     union {
+          struct {
+               char   *_svalue;
+               int   _length;
+          } _string;
+          num _number;
+          port *_port;
+          foreign_func _ff;
+          struct {
+               struct cell *_car;
+               struct cell *_cdr;
+          } _cons;
+     } _object;
 };
 
 struct scheme {
@@ -70,47 +70,47 @@ int tracing;
 
 #define CELL_SEGSIZE    5000  /* # of cells in one segment */
 #define CELL_NSEGMENT   10    /* # of segments for cells */
-char *alloc_seg[CELL_NSEGMENT];
+char  *alloc_seg[CELL_NSEGMENT];
 pointer cell_seg[CELL_NSEGMENT];
 int     last_cell_seg;
 
 /* We use 4 registers. */
-pointer args;            /* register for arguments of function */
-pointer envir;           /* stack register for current environment */
-pointer code;            /* register for current code */
-pointer dump;            /* stack register for next evaluation */
+pointer args;         /* register for arguments of function */
+pointer envir;        /* stack register for current environment */
+pointer code;         /* register for current code */
+pointer dump;         /* stack register for next evaluation */
 
-int interactive_repl;    /* are we in an interactive REPL? */
+int interactive_repl; /* are we in an interactive REPL? */
 
 struct cell _sink;
-pointer sink;            /* when mem. alloc. fails */
-struct cell _NIL;
-pointer NIL;             /* special cell representing empty cell */
+pointer      sink;       /* when mem. alloc. fails */
+struct cell  _NIL;
+pointer      NIL;        /* special cell representing empty cell */
 struct cell _HASHT;
-pointer T;               /* special cell representing #t */
+pointer      T;          /* special cell representing #t */
 struct cell _HASHF;
-pointer F;               /* special cell representing #f */
+pointer      F;          /* special cell representing #f */
 struct cell _EOF_OBJ;
-pointer EOF_OBJ;         /* special cell representing end-of-file object */
-pointer oblist;          /* pointer to symbol table */
-pointer global_env;      /* pointer to global environment */
-pointer c_nest;          /* stack for nested calls from C */
+pointer      EOF_OBJ;    /* special cell representing end-of-file object */
+pointer      oblist;     /* pointer to symbol table */
+pointer      global_env; /* pointer to global environment */
+pointer      c_nest;     /* stack for nested calls from C */
 
 /* global pointers to special symbols */
-pointer LAMBDA;               /* pointer to syntax lambda */
-pointer QUOTE;           /* pointer to syntax quote */
+pointer LAMBDA;       /* pointer to syntax lambda */
+pointer QUOTE;        /* pointer to syntax quote */
 
-pointer QQUOTE;               /* pointer to symbol quasiquote */
-pointer UNQUOTE;         /* pointer to symbol unquote */
-pointer UNQUOTESP;       /* pointer to symbol unquote-splicing */
-pointer FEED_TO;         /* => */
-pointer COLON_HOOK;      /* *colon-hook* */
-pointer ERROR_HOOK;      /* *error-hook* */
-pointer SHARP_HOOK;  /* *sharp-hook* */
-pointer COMPILE_HOOK;  /* *compile-hook* */
+pointer QQUOTE;       /* pointer to symbol quasiquote */
+pointer UNQUOTE;      /* pointer to symbol unquote */
+pointer UNQUOTESP;    /* pointer to symbol unquote-splicing */
+pointer FEED_TO;      /* => */
+pointer COLON_HOOK;   /* *colon-hook* */
+pointer ERROR_HOOK;   /* *error-hook* */
+pointer SHARP_HOOK;   /* *sharp-hook* */
+pointer COMPILE_HOOK; /* *compile-hook* */
 
-pointer free_cell;       /* pointer to top of free cells */
-long    fcells;          /* # of free cells */
+pointer free_cell;    /* pointer to top of free cells */
+long    fcells;       /* # of free cells */
 
 pointer inport;
 pointer outport;
@@ -119,9 +119,9 @@ pointer loadport;
 
 #define MAXFIL 64
 port load_stack[MAXFIL];     /* Stack of open files for port -1 (LOADing) */
-int nesting_stack[MAXFIL];
-int file_i;
-int nesting;
+int  nesting_stack[MAXFIL];
+int  file_i;
+int  nesting;
 
 char    gc_verbose;      /* if gc_verbose is not zero, print gc status */
 char    no_memory;       /* Whether mem. alloc. has failed */
@@ -131,11 +131,11 @@ char    linebuff[LINESIZE];
 #define STRBUFFSIZE 256
 char    strbuff[STRBUFFSIZE];
 
-FILE *tmpfp;
-int tok;
-int print_flag;
+FILE    *tmpfp;
+int     tok;
+int     print_flag;
 pointer value;
-int op;
+int     op;
 
 void *ext_data;     /* For the benefit of foreign functions */
 long gensym_cnt;
@@ -149,12 +149,12 @@ int dump_size;		 /* number of frames allocated for dump stack */
 enum scheme_opcodes {
 #define _OP_DEF(A,B,C,D,E,OP) OP,
 #include "opdefines.h"
-  OP_MAXDEFINED
+     OP_MAXDEFINED
 };
 
 
-#define cons(sc,a,b) _cons(sc,a,b,0)
-#define immutable_cons(sc,a,b) _cons(sc,a,b,1)
+#define cons(sc, a, b) _cons(sc, a, b, 0)
+#define immutable_cons(sc, a, b) _cons(sc, a, b, 1)
 
 int is_string(pointer p);
 char *string_value(pointer p);
