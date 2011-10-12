@@ -52,7 +52,7 @@ PLATFORM_FEATURES= -DSUN_DL=1
 
 FEATURES = $(PLATFORM_FEATURES) -DUSE_DL=1 -DUSE_MATH=0 -DUSE_ASCII_NAMES=0
 
-OBJS = scheme.$(Osuf) dynload.$(Osuf)
+OBJS = scheme.$(Osuf) dynload.$(Osuf) scheme-num.$(Osuf)
 
 LIBTARGET = $(LIBPREFIX)tinyscheme.$(SOsuf)
 STATICLIBTARGET = $(LIBPREFIX)tinyscheme.$(LIBsuf)
@@ -71,7 +71,7 @@ scheme$(EXE_EXT): $(OBJS)
 $(STATICLIBTARGET): $(OBJS)
 	$(AR) $@ $(OBJS)
 
-$(OBJS): scheme.h scheme-private.h opdefines.h
+$(OBJS): scheme.h scheme-private.h opdefines.h scheme-num.h
 dynload.$(Osuf): dynload.h
 
 clean:
@@ -80,7 +80,7 @@ clean:
 	$(RM) scheme.ilk scheme.map scheme.pdb scheme.lib scheme.exp
 	$(RM) *~ cscope.out TAGS
 
-TAGS_SRCS = scheme.h scheme.c dynload.h dynload.c
+TAGS_SRCS = scheme.h scheme.c dynload.h dynload.c scheme-num.c
 
 tags: TAGS CSCOPE
 
