@@ -1698,7 +1698,7 @@ static void mark(pointer a)
 E2:  setmark(p);
      if (is_vector(p)) {
           int i;
-          int num=ivalue_unchecked(p)/2+ivalue_unchecked(p)%2;
+          int num = ivalue_unchecked(p) / 2 + ivalue_unchecked(p) % 2;
 
           for (i = 0; i < num; i++) {
                /* Vector cells will be treated like ordinary cells */
