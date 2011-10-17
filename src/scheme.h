@@ -119,13 +119,13 @@ typedef void * (*func_alloc)(size_t);
 typedef void (*func_dealloc)(void *);
 
 /* num, for generic arithmetic */
-typedef struct num {
+typedef struct SCM_NUM {
      char is_fixnum;
      union {
           long ivalue;
           double rvalue;
      } value;
-} num;
+} SCM_NUM;
      
 SCHEME_EXPORT scheme *scheme_init_new();
 SCHEME_EXPORT scheme *scheme_init_new_custom_alloc(func_alloc malloc, func_dealloc free);
@@ -183,7 +183,7 @@ struct scheme_interface {
      int (*is_string)(pointer p);
      char *(*string_value)(pointer p);
      int (*is_number)(pointer p);
-     num (*nvalue)(pointer p);
+     SCM_NUM (*nvalue)(pointer p);
      long (*ivalue)(pointer p);
      double (*rvalue)(pointer p);
      int (*is_integer)(pointer p);

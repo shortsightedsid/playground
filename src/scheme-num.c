@@ -7,9 +7,9 @@
 #define num_rvalue(n)       (!n.is_fixnum?(n).value.rvalue : (double) (n).value.ivalue)
 
 
-num num_add(num a, num b)
+SCM_NUM num_add(SCM_NUM a, SCM_NUM b)
 {
-     num ret;
+     SCM_NUM ret;
 
      ret.is_fixnum = a.is_fixnum && b.is_fixnum;
 
@@ -23,9 +23,9 @@ num num_add(num a, num b)
 }
 
 
-num num_mul(num a, num b) 
+SCM_NUM num_mul(SCM_NUM a, SCM_NUM b) 
 {
-     num ret;
+     SCM_NUM ret;
 
      ret.is_fixnum = a.is_fixnum && b.is_fixnum;
 
@@ -39,9 +39,9 @@ num num_mul(num a, num b)
 }
 
 
-num num_div(num a, num b)
+SCM_NUM num_div(SCM_NUM a, SCM_NUM b)
 {
-     num ret;
+     SCM_NUM ret;
 
      ret.is_fixnum = a.is_fixnum && b.is_fixnum && a.value.ivalue % b.value.ivalue == 0;
 
@@ -55,9 +55,9 @@ num num_div(num a, num b)
 }
 
 
-num num_intdiv(num a, num b) 
+SCM_NUM num_intdiv(SCM_NUM a, SCM_NUM b) 
 {
-     num ret;
+     SCM_NUM ret;
 
      ret.is_fixnum = a.is_fixnum && b.is_fixnum;
 
@@ -71,9 +71,9 @@ num num_intdiv(num a, num b)
 }
 
 
-num num_sub(num a, num b) 
+SCM_NUM num_sub(SCM_NUM a, SCM_NUM b) 
 {
-     num ret;
+     SCM_NUM ret;
 
      ret.is_fixnum = a.is_fixnum && b.is_fixnum;
 
@@ -87,9 +87,9 @@ num num_sub(num a, num b)
 }
 
 
-num num_rem(num a, num b) 
+SCM_NUM num_rem(SCM_NUM a, SCM_NUM b) 
 {
-     num ret;
+     SCM_NUM ret;
      long e1, e2, res;
 
      ret.is_fixnum = a.is_fixnum && b.is_fixnum;
@@ -116,9 +116,9 @@ num num_rem(num a, num b)
 }
 
 
-num num_mod(num a, num b) 
+SCM_NUM num_mod(SCM_NUM a, SCM_NUM b) 
 {
-     num ret;
+     SCM_NUM ret;
      long e1, e2, res;
 
      ret.is_fixnum = a.is_fixnum && b.is_fixnum;
@@ -145,7 +145,7 @@ num num_mod(num a, num b)
 }
 
 
-int num_eq(num a, num b) 
+int num_eq(SCM_NUM a, SCM_NUM b) 
 {
      int ret;
      int is_fixnum = a.is_fixnum && b.is_fixnum;
@@ -160,7 +160,7 @@ int num_eq(num a, num b)
 }
 
 
-int num_gt(num a, num b) 
+int num_gt(SCM_NUM a, SCM_NUM b) 
 {
      int ret;
      int is_fixnum = a.is_fixnum && b.is_fixnum;
@@ -175,13 +175,13 @@ int num_gt(num a, num b)
 }
 
 
-int num_ge(num a, num b)
+int num_ge(SCM_NUM a, SCM_NUM b)
 {
      return !num_lt(a,b);
 }
 
 
-int num_lt(num a, num b) 
+int num_lt(SCM_NUM a, SCM_NUM b) 
 {
      int ret;
      int is_fixnum=a.is_fixnum && b.is_fixnum;
@@ -196,7 +196,7 @@ int num_lt(num a, num b)
 }
 
 
-int num_le(num a, num b) 
+int num_le(SCM_NUM a, SCM_NUM b) 
 {
      return !num_gt(a,b);
 }

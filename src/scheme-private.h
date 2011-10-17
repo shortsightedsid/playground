@@ -48,7 +48,7 @@ struct cell {
                char   *_svalue;
                int   _length;
           } _string;
-          num _number;
+          SCM_NUM _number;
           port *_port;
           foreign_func _ff;
           struct {
@@ -159,7 +159,7 @@ enum scheme_opcodes {
 int is_string(pointer p);
 char *string_value(pointer p);
 int is_number(pointer p);
-num nvalue(pointer p);
+SCM_NUM nvalue(pointer p);
 long ivalue(pointer p);
 double rvalue(pointer p);
 int is_integer(pointer p);

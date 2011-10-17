@@ -185,8 +185,8 @@ static INLINE int num_is_integer(pointer p)
 }
 
 
-static num num_zero;
-static num num_one;
+static SCM_NUM num_zero;
+static SCM_NUM num_one;
 
 
 /* macros for cell operations */
@@ -245,7 +245,7 @@ INTERFACE INLINE char *string_value(pointer p)
 }
 
 
-INLINE num nvalue(pointer p)
+INLINE SCM_NUM nvalue(pointer p)
 { 
      return ((p)->_object._number); 
 }
@@ -553,7 +553,7 @@ static pointer find_consecutive_cells(scheme *sc, int n);
 static void finalize_cell(scheme *sc, pointer a);
 static int count_consecutive_cells(pointer x, int needed);
 static pointer find_slot_in_env(scheme *sc, pointer env, pointer sym, int all);
-static pointer mk_number(scheme *sc, num n);
+static pointer mk_number(scheme *sc, SCM_NUM n);
 static char *store_string(scheme *sc, int len, const char *str, char fill);
 static pointer mk_vector(scheme *sc, int len);
 static pointer mk_atom(scheme *sc, char *q);
@@ -1172,7 +1172,7 @@ INTERFACE pointer mk_real(scheme *sc, double n)
      return (x);
 }
 
-static pointer mk_number(scheme *sc, num n) 
+static pointer mk_number(scheme *sc, SCM_NUM n) 
 {
      if (n.is_fixnum) {
           return mk_integer(sc, n.value.ivalue);
@@ -3674,7 +3674,7 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
 static pointer opexe_2(scheme *sc, enum scheme_opcodes op)
 {
      pointer x;
-     num v;
+     SCM_NUM v;
 #if USE_MATH
      double dd;
 #endif
@@ -4149,8 +4149,8 @@ int list_length(scheme *sc, pointer a)
 static pointer opexe_3(scheme *sc, enum scheme_opcodes op)
 {
      pointer x;
-     num v;
-     int (*comp_func)(num,num)=0;
+     SCM_NUM v;
+     int (*comp_func)(NUM, NUM) = 0;
      
      switch (op) {
      case OP_NOT:        /* not */
