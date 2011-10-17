@@ -114,19 +114,11 @@ extern "C" {
 
 typedef struct scheme scheme;
 typedef struct cell *pointer;
+typedef struct SCM_NUM SCM_NUM;
 
 typedef void * (*func_alloc)(size_t);
 typedef void (*func_dealloc)(void *);
 
-/* num, for generic arithmetic */
-typedef struct SCM_NUM {
-     char is_fixnum;
-     union {
-          long ivalue;
-          double rvalue;
-     } value;
-} SCM_NUM;
-     
 SCHEME_EXPORT scheme *scheme_init_new();
 SCHEME_EXPORT scheme *scheme_init_new_custom_alloc(func_alloc malloc, func_dealloc free);
 SCHEME_EXPORT int scheme_init(scheme *sc);

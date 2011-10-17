@@ -11,6 +11,15 @@
 extern "C" {
 #endif
 
+/* num, for generic arithmetic */
+struct SCM_NUM {
+     char is_fixnum;
+     union {
+          long ivalue;
+          double rvalue;
+     } value;
+};
+     
 enum scheme_port_kind {
      port_free    = 0,
      port_file    = 1,
