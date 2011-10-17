@@ -4150,7 +4150,7 @@ static pointer opexe_3(scheme *sc, enum scheme_opcodes op)
 {
      pointer x;
      SCM_NUM v;
-     int (*comp_func)(NUM, NUM) = 0;
+     int (*comp_func)(SCM_NUM, SCM_NUM) = 0;
      
      switch (op) {
      case OP_NOT:        /* not */
