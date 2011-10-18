@@ -1,6 +1,9 @@
 #ifndef __SCHEME_NUM__H
 #define __SCHEME_NUM__H
 
+#include "scheme.h"
+#include "scheme-private.h"
+
 SCM_NUM num_add(SCM_NUM a, SCM_NUM b);
 SCM_NUM num_mul(SCM_NUM a, SCM_NUM b);
 SCM_NUM num_div(SCM_NUM a, SCM_NUM b);

@@ -1,10 +1,8 @@
 #include <stdlib.h>
-#include "scheme.h"
-#include "scheme-private.h"
 #include "scheme-num.h"
 
-#define num_ivalue(n)       (n.is_fixnum?(n).value.ivalue  : (long) (n).value.rvalue)
-#define num_rvalue(n)       (!n.is_fixnum?(n).value.rvalue : (double) (n).value.ivalue)
+#define SCM_NUM_IVALUE(n)       (n.is_fixnum?(n).value.ivalue  : (long) (n).value.rvalue)
+#define SCM_NUM_RVALUE(n)       (!n.is_fixnum?(n).value.rvalue : (double) (n).value.ivalue)
 
 
 SCM_NUM num_add(SCM_NUM a, SCM_NUM b)
@@ -16,7 +14,7 @@ SCM_NUM num_add(SCM_NUM a, SCM_NUM b)
      if(ret.is_fixnum) {
           ret.value.ivalue = a.value.ivalue + b.value.ivalue;
      } else {
-          ret.value.rvalue = num_rvalue(a) + num_rvalue(b);
+          ret.value.rvalue = SCM_NUM_RVALUE(a) + SCM_NUM_RVALUE(b);
      }
 
      return ret;
@@ -32,7 +30,7 @@ SCM_NUM num_mul(SCM_NUM a, SCM_NUM b)
      if(ret.is_fixnum) {
           ret.value.ivalue = a.value.ivalue * b.value.ivalue;
      } else {
-          ret.value.rvalue = num_rvalue(a) * num_rvalue(b);
+          ret.value.rvalue = SCM_NUM_RVALUE(a) * SCM_NUM_RVALUE(b);
      }
 
      return ret;
@@ -48,7 +46,7 @@ SCM_NUM num_div(SCM_NUM a, SCM_NUM b)
      if(ret.is_fixnum) {
           ret.value.ivalue = a.value.ivalue / b.value.ivalue;
      } else {
-          ret.value.rvalue = num_rvalue(a) / num_rvalue(b);
+          ret.value.rvalue = SCM_NUM_RVALUE(a) / SCM_NUM_RVALUE(b);
      }
 
      return ret;
@@ -64,7 +62,7 @@ SCM_NUM num_intdiv(SCM_NUM a, SCM_NUM b)
      if(ret.is_fixnum) {
           ret.value.ivalue = a.value.ivalue / b.value.ivalue;
      } else {
-          ret.value.rvalue = num_rvalue(a) / num_rvalue(b);
+          ret.value.rvalue = SCM_NUM_RVALUE(a) / SCM_NUM_RVALUE(b);
      }
 
      return ret;
@@ -80,7 +78,7 @@ SCM_NUM num_sub(SCM_NUM a, SCM_NUM b)
      if(ret.is_fixnum) {
           ret.value.ivalue = a.value.ivalue - b.value.ivalue;
      } else {
-          ret.value.rvalue = num_rvalue(a) - num_rvalue(b);
+          ret.value.rvalue = SCM_NUM_RVALUE(a) - SCM_NUM_RVALUE(b);
      }
 
      return ret;
@@ -94,8 +92,8 @@ SCM_NUM num_rem(SCM_NUM a, SCM_NUM b)
 
      ret.is_fixnum = a.is_fixnum && b.is_fixnum;
 
-     e1 = num_ivalue(a);
-     e2 = num_ivalue(b);
+     e1 = SCM_NUM_IVALUE(a);
+     e2 = SCM_NUM_IVALUE(b);
 
      res = e1 % e2;
 
@@ -123,8 +121,8 @@ SCM_NUM num_mod(SCM_NUM a, SCM_NUM b)
 
      ret.is_fixnum = a.is_fixnum && b.is_fixnum;
 
-     e1 = num_ivalue(a);
-     e2 = num_ivalue(b);
+     e1 = SCM_NUM_IVALUE(a);
+     e2 = SCM_NUM_IVALUE(b);
 
      res = e1 % e2;
 
@@ -153,7 +151,7 @@ int num_eq(SCM_NUM a, SCM_NUM b)
      if(is_fixnum) {
           ret = a.value.ivalue == b.value.ivalue;
      } else {
-          ret = num_rvalue(a) == num_rvalue(b);
+          ret = SCM_NUM_RVALUE(a) == SCM_NUM_RVALUE(b);
      }
 
      return ret;
@@ -168,7 +166,7 @@ int num_gt(SCM_NUM a, SCM_NUM b)
      if(is_fixnum) {
           ret = a.value.ivalue > b.value.ivalue;
      } else {
-          ret = num_rvalue(a) > num_rvalue(b);
+          ret = SCM_NUM_RVALUE(a) > SCM_NUM_RVALUE(b);
      }
 
      return ret;
@@ -189,7 +187,7 @@ int num_lt(SCM_NUM a, SCM_NUM b)
      if(is_fixnum) {
           ret = a.value.ivalue < b.value.ivalue;
      } else {
-          ret = num_rvalue(a) < num_rvalue(b);
+          ret = SCM_NUM_RVALUE(a) < SCM_NUM_RVALUE(b);
      }
 
      return ret;
