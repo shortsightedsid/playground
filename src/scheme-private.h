@@ -11,6 +11,10 @@
 extern "C" {
 #endif
 
+/* macros for cell operations */
+#define typeflag(p)      ((p)->_flag)
+#define type(p)          (typeflag(p) & T_MASKTYPE)
+
 /* num, for generic arithmetic */
 struct SCM_NUM {
      char is_fixnum;

@@ -189,10 +189,6 @@ static SCM_NUM num_zero;
 static SCM_NUM num_one;
 
 
-/* macros for cell operations */
-#define typeflag(p)      ((p)->_flag)
-#define type(p)          (typeflag(p) & T_MASKTYPE)
-
 
 INTERFACE INLINE int is_string(pointer p)
 { 
