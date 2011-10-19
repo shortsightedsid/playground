@@ -153,6 +153,7 @@ void putstr(scheme *sc, const char *s);
 int list_length(scheme *sc, pointer a);
 int eqv(pointer a, pointer b);
 
+pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 
 #if USE_INTERFACE
 struct scheme_interface {
