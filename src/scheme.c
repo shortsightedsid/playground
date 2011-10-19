@@ -235,12 +235,6 @@ INTERFACE INLINE char *string_value(pointer p)
 }
 
 
-INLINE SCM_NUM nvalue(pointer p)
-{ 
-     return ((p)->_object._number); 
-}
-
-
 INTERFACE long ivalue(pointer p)
 { 
      return (num_is_integer(p) ? 

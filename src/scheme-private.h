@@ -172,7 +172,6 @@ enum scheme_opcodes {
 int is_string(pointer p);
 char *string_value(pointer p);
 int is_number(pointer p);
-SCM_NUM nvalue(pointer p);
 long ivalue(pointer p);
 double rvalue(pointer p);
 int is_integer(pointer p);

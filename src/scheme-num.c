@@ -198,3 +198,9 @@ int num_le(SCM_NUM a, SCM_NUM b)
 {
      return !num_gt(a,b);
 }
+
+
+INLINE SCM_NUM nvalue(pointer p)
+{ 
+     return ((p)->_object._number); 
+}

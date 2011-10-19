@@ -16,5 +16,6 @@ int num_gt(SCM_NUM a, SCM_NUM b);
 int num_ge(SCM_NUM a, SCM_NUM b);
 int num_lt(SCM_NUM a, SCM_NUM b);
 int num_le(SCM_NUM a, SCM_NUM b);
+SCM_NUM nvalue(pointer p);
 
 #endif
