@@ -5,10 +5,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define banner "Playground Scheme 0.1"
+#define BANNER "Playground Scheme 0.1"
 
-#ifndef InitFile
-#define InitFile "init.scm"
+#ifndef INITFILE
+#define INITFILE "init.scm"
 #endif
 
 #if STANDALONE
@@ -51,11 +51,11 @@ int main(int argc, char **argv)
 #endif
      scheme sc;
      FILE *fin;
-     char *file_name = InitFile;
+     char *file_name = INITFILE;
      int isfile = 1;
      
      if (argc == 1) {
-          printf(banner);
+          printf(BANNER);
      }
 
      if (argc == 2 && strcmp(argv[1], "-?") == 0) {
