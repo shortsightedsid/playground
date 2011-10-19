@@ -12,9 +12,7 @@ tags:
 	$(MAKE) -C src/ tags
 
 tests:
-	@cp src/init.scm .
 	@for i in tests/*; do \
 		echo ==== Running $$i ====; \
-		src/scheme $$i; \
+		TINYSCHEMEINIT=collect/init.scm src/scheme $$i; \
 	done
-	@rm init.scm
