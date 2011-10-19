@@ -59,21 +59,27 @@ STATICLIBTARGET = $(LIBPREFIX)tinyscheme.$(LIBsuf)
 
 all: $(LIBTARGET) $(STATICLIBTARGET) scheme$(EXE_EXT)
 
+ifndef VERBOSE
+  Q = @
+else
+  Q =
+endif
+
 %.$(Osuf): %.c
 	@echo CC $<
-	@$(CC) -I. -c $(DEBUG) $(FEATURES) $(DL_FLAGS) $<
+	$(Q)$(CC) -I. -c $(DEBUG) $(FEATURES) $(DL_FLAGS) $<
 
 $(LIBTARGET): $(OBJS)
 	@echo LD $@
-	@$(LD) $(LOCAL_LDFLAGS) $(OUT) $(OBJS) $(SYS_LIBS)
+	$(Q)$(LD) $(LOCAL_LDFLAGS) $(OUT) $(OBJS) $(SYS_LIBS)
 
 scheme$(EXE_EXT): $(OBJS)
 	@echo LD $@
-	@$(CC) -o $@ $(DEBUG) $(OBJS) $(SYS_LIBS)
+	$(Q)$(CC) -o $@ $(DEBUG) $(OBJS) $(SYS_LIBS)
 
 $(STATICLIBTARGET): $(OBJS)
 	@echo LD $@
-	@$(AR) $@ $(OBJS)
+	$(Q)$(AR) $@ $(OBJS)
 
 $(OBJS): scheme.h scheme-private.h opdefines.h scheme-num.h
 dynload.$(Osuf): dynload.h
