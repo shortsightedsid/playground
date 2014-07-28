@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define BANNER "Playground Scheme 0.1"
 
